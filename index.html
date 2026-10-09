@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Lidl Party – Regisztráció</title>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<script>
+  // A regisztrációs oldal (Apps Script webapp) PONTOS /exec címe:
+  var TARGET = 'https://script.google.com/macros/s/AKfycbzRGfWCmVuizGLvVNNaOQVIhF9Iy0yhzPdy6HoBOkrDYAFxNzR03Yesagtl9Pq_8Ij3Ug/exec';
+  var UA = navigator.userAgent || '';
+  var IN_APP = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|Line\/|MicroMessenger/i.test(UA);
+  // Normál böngésző: azonnali továbbítás még a kártya megjelenése előtt (a kártya rejtve marad)
+  if (!IN_APP) { document.documentElement.className = 'go'; location.replace(TARGET); }
+</script>
 <style>
   /* Köztes oldal a Facebook / Instagram beépített böngészőjéhez. Személyes adatot nem kezel, sütit nem használ. */
   :root { --bg: #1d1433; --card: #2a1f45; --ink: #f1e9d8; --muted: #c9bfdc; --accent: #f2832a; }
@@ -21,6 +31,7 @@
   ol li { margin: 6px 0; }
   .muted { font-size: .85rem; color: var(--muted); margin-top: 14px; }
   [hidden] { display: none !important; }
+  .go main { visibility: hidden; }   /* normál böngészőben csak a háttér látszik a betöltésig */
 </style>
 </head>
 <body>
@@ -52,21 +63,14 @@
 
 <script>
   (function () {
-    // A regisztrációs oldal (Apps Script webapp) PONTOS /exec címe:
-    var TARGET = 'https://script.google.com/macros/s/AKfycbzRGfWCmVuizGLvVNNaOQVIhF9Iy0yhzPdy6HoBOkrDYAFxNzR03Yesagtl9Pq_8Ij3Ug/exec';
-
-    var ua = navigator.userAgent || '';
-    var inApp = /FBAN|FBAV|FB_IAB|FBIOS|Instagram|Messenger|Line\/|MicroMessenger/i.test(ua);
+    var ua = UA, inApp = IN_APP;
     var isAndroid = /Android/i.test(ua);
     var isIos = /iPhone|iPad|iPod/i.test(ua);
     var $ = function (id) { return document.getElementById(id); };
 
     $('goDirect').href = TARGET;
 
-    if (!inApp) {                       // normál böngésző: azonnal tovább
-      location.replace(TARGET);
-      return;
-    }
+    if (!inApp) return;                 // normál böngésző: a továbbítás már a <head>-ben elindult
 
     $('vNormal').hidden = true;
     $('vInApp').hidden = false;
