@@ -30,11 +30,18 @@
   ol { text-align: left; color: var(--ink); padding-left: 1.2em; margin: 12px 0 4px; }
   ol li { margin: 6px 0; }
   .muted { font-size: .85rem; color: var(--muted); margin-top: 14px; }
+  .steps { font-size: 1.05rem; background: #ffffff10; border-radius: 10px; padding: 12px 12px 12px 2em; }
+  .ico { display: inline-block; padding: 0 6px; border-radius: 6px; background: var(--accent); color: #1d1433; }
+  .arrow { position: fixed; top: 4px; right: 12px; font-size: 3rem; line-height: 1; color: var(--accent); animation: nudge 1s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: translate(5px, -5px); } }
+  @media (prefers-reduced-motion: reduce) { .arrow { animation: none; } }
+  button.btn { font-family: inherit; font-size: 1.05rem; }
   [hidden] { display: none !important; }
   .go main { visibility: hidden; }   /* normál böngészőben csak a háttér látszik a betöltésig */
 </style>
 </head>
 <body>
+<div class="arrow" id="arrow" hidden>↗</div>
 <main>
   <h1>Lidl Party – Regisztráció</h1>
 
@@ -44,18 +51,14 @@
     <a class="btn" id="goDirect" href="#">Tovább a regisztrációhoz</a>
   </div>
 
-  <!-- Facebook / Instagram / Messenger beépített böngésző -->
+  <!-- Facebook / Instagram / Messenger beépített böngésző: a biztos út a kézi menü -->
   <div id="vInApp" hidden>
-    <p>A regisztrációs oldal a Facebook / Instagram beépített böngészőjében nem töltődik be. Kérjük, nyisd meg a telefonod saját böngészőjében:</p>
-    <a class="btn" id="openExternal" href="#">Megnyitás böngészőben</a>
-    <ol id="howIos" hidden>
-      <li>Koppints a jobb felső sarokban a <b>⋯</b> ikonra.</li>
-      <li>Válaszd a <b>„Megnyitás böngészőben”</b> (Open in browser / Safari) lehetőséget.</li>
+    <p>Ez az oldal a Facebook / Instagram / Messenger beépített böngészőjében nem működik. Nyisd meg a telefonod saját böngészőjében:</p>
+    <ol class="steps">
+      <li>Koppints a jobb felső sarokban a <b class="ico" id="menuIco">⋯</b> ikonra.</li>
+      <li>Válaszd a <b>„Megnyitás böngészőben”</b> <span id="brName">(Open in browser)</span> lehetőséget.</li>
     </ol>
-    <ol id="howAndroid" hidden>
-      <li>Ha a gomb nem működik: koppints a jobb felső <b>⋮</b> ikonra.</li>
-      <li>Válaszd a <b>„Megnyitás böngészőben”</b> (Open in Chrome) lehetőséget.</li>
-    </ol>
+    <a class="btn sec" id="openExternal" href="#">Automatikus megnyitás (nem minden telefonon működik)</a>
     <button class="btn sec" id="copyLink" type="button">Link másolása</button>
     <p class="muted" id="copyMsg" hidden>A link a vágólapra került – illeszd be a böngésző címsorába.</p>
   </div>
@@ -74,15 +77,15 @@
 
     $('vNormal').hidden = true;
     $('vInApp').hidden = false;
+    $('arrow').hidden = false;
+    if (isAndroid) { $('menuIco').textContent = '⋮'; $('brName').textContent = '(Open in Chrome)'; }
+    if (isIos) $('brName').textContent = '(Open in Safari)';
     var noScheme = TARGET.replace(/^https?:\/\//, '');
-    var ext = isAndroid
+    $('openExternal').href = isAndroid
       ? 'intent://' + noScheme + '#Intent;scheme=https;S.browser_fallback_url=' + encodeURIComponent(TARGET) + ';end'
       : isIos ? 'x-safari-https://' + noScheme : TARGET;
-    $('openExternal').href = ext;
-    $(isIos ? 'howIos' : 'howAndroid').hidden = false;
-
-    // Androidon azonnal megpróbáljuk a külső böngészőt (a Facebook böngészője ezt általában engedi)
-    if (isAndroid) setTimeout(function () { location.href = ext; }, 300);
+    // Androidon egyszer automatikusan megpróbáljuk (ha a Facebook tiltja, a kézi útmutató marad)
+    if (isAndroid) setTimeout(function () { location.href = $('openExternal').href; }, 300);
 
     $('copyLink').addEventListener('click', function () {
       var done = function () { $('copyMsg').hidden = false; };
